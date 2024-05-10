@@ -32,11 +32,11 @@ class CrawlingSpider(scrapy.Spider):
                   f"https://nutrition.umd.edu/?locationNum=19&dtdate={today_date}",
                   f"https://nutrition.umd.edu/?locationNum=16&dtdate={today_date}"]
 
-    custom_settings = {
-        'FEEDS': {
-            'output.json': {'format': 'json', 'overwrite': True},
-        }
-    }
+    # custom_settings = {
+    #     'FEEDS': {
+    #         'output.json': {'format': 'json', 'overwrite': True},
+    #     }
+    # }
 
     def parse(self, response, **kwargs):
         dining_hall = response.url[39:41]
