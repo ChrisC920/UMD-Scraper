@@ -12,6 +12,7 @@ class CrawlingSpider(scrapy.Spider):
         super().__init__(name, **kwargs)
         self.ending_time = None
         self.starting_time = datetime.now()
+        supabase_client.table('food_today').delete().neq("id", 0).execute()
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
@@ -21,9 +22,11 @@ class CrawlingSpider(scrapy.Spider):
 
     def spider_closed(self, spider, reason):
         ending_time = datetime.now()
+        supabase_client.table('food_today').insert(scraped_data).execute()
         print("Time taken:", ending_time - self.starting_time)
         response = supabase_client.table('food').upsert(scraped_data, on_conflict=('name, dining_hall, section, meal_type, allergens', 'DO NOTHING'), ignore_duplicates=True).execute()
         print(f"Response: {response}")
+
 
     today_date = datetime.now().strftime("%m/%d/%Y")
     name = "mycrawler"
