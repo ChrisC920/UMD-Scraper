@@ -1,0 +1,15 @@
+LICENSE
+README.md
+setup.py
+UMD_Web_Scraper/__init__.py
+UMD_Web_Scraper/items.py
+UMD_Web_Scraper/middlewares.py
+UMD_Web_Scraper/pipelines.py
+UMD_Web_Scraper/settings.py
+UMD_Web_Scraper/spiders/__init__.py
+UMD_Web_Scraper/spiders/crawling_spider.py
+project.egg-info/PKG-INFO
+project.egg-info/SOURCES.txt
+project.egg-info/dependency_links.txt
+project.egg-info/entry_points.txt
+project.egg-info/top_level.txt
