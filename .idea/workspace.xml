@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c34606cc-6068-4dcd-9d1a-af67e372e3fe" name="Changes" comment="added new curr db">
-      <change beforePath="$PROJECT_DIR$/.idea/UMD_Dining_Web_Scraper_Python.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UMD_Web_Scraper/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/UMD_Web_Scraper/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UMD_Web_Scraper/spiders/crawling_spider.py" beforeDir="false" afterPath="$PROJECT_DIR$/UMD_Web_Scraper/spiders/crawling_spider.py" afterDir="false" />
-    </list>
+    <list default="true" id="c34606cc-6068-4dcd-9d1a-af67e372e3fe" name="Changes" comment="added new curr db" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -58,7 +53,7 @@
       <option name="presentableId" value="Default" />
       <updated>1728691383610</updated>
       <workItem from="1728691385493" duration="1524000" />
-      <workItem from="1729133409059" duration="838000" />
+      <workItem from="1729133409059" duration="1226000" />
     </task>
     <servers />
   </component>
