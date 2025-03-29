@@ -6,14 +6,13 @@ from UMD_Web_Scraper.settings import supabase_client
 
 scraped_data = []
 
-
-
 class CrawlingSpider(scrapy.Spider):
+
     def __init__(self, name=None, **kwargs):
         super().__init__(name, **kwargs)
         self.ending_time = None
         self.starting_time = datetime.now()
-        supabase_client.table('food_today').delete().neq("id", 0).execute()
+        # supabase_client.table('food_today_old').delete().neq("id", 0).execute()
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
@@ -22,26 +21,66 @@ class CrawlingSpider(scrapy.Spider):
         return spider
 
     def spider_closed(self, spider, reason):
+
         ending_time = datetime.now()
-        supabase_client.table('food_today').insert(scraped_data).execute()
+        # supabase_client.table('food_today_old').insert(scraped_data).execute()
         print("Time taken:", ending_time - self.starting_time)
-        response = supabase_client.table('food').upsert(scraped_data, on_conflict=('name, dining_hall, section, meal_type')).execute()
-        print(f"Response: {response}")
+
+        # Insert into the food table while referencing the correct foreign keys
+        for data in scraped_data:
+            # Get or insert dining_hall
+            dining_hall_response = supabase_client.table('dining_halls').upsert({"name": data["dining_hall"]},
+                                                                                on_conflict=["name"]).execute()
+            dining_hall_id = dining_hall_response.data[0]['id']  # Get the dining_hall_id
+
+            # Get or insert section
+            section_response = supabase_client.table('sections').upsert({"name": data["section"]},
+                                                                        on_conflict=["name"]).execute()
+            section_id = section_response.data[0]['id']  # Get the section_id
+
+            # Get or insert meal_type
+            meal_type_response = supabase_client.table('meal_types').upsert({"name": data["meal_type"]},
+                                                                            on_conflict=["name"]).execute()
+            meal_type_id = meal_type_response.data[0]['id']  # Get the meal_type_id
+            print("TESTING", dining_hall_id, section_id, meal_type_id)
+
+            # Insert food and reference the foreign key ids
+            food_data = {
+                "name": data["name"],
+                "dining_hall_id": dining_hall_id,
+                "section_id": section_id,
+                "meal_type_id": meal_type_id,
+                "link": data["link"],
+                "serving_size": data["serving_size"],
+                "servings_per_container": data["servings_per_container"],
+                "calories_per_serving": data["calories_per_serving"],
+                "total_fat": data["total_fat"],
+                "saturated_fat": data["saturated_fat"],
+                "trans_fat": data["trans_fat"],
+                "total_carbohydrates": data["total_carbohydrates"],
+                "dietary_fiber": data["dietary_fiber"],
+                "total_sugars": data["total_sugars"],
+                "added_sugars": data["added_sugars"],
+                "cholesterol": data["cholesterol"],
+                "sodium": data["sodium"],
+                "protein": data["protein"]
+            }
+
+            print(f"Processed Data: {food_data}")
+
+            food_response = supabase_client.table('foods').upsert(food_data, on_conflict=("name")).execute()
+            print(f"Food upsert response: {food_response}")
+
+        print(f"Scraped {len(scraped_data)} items.")
 
     # tz = timezone('EST')
     # today_date = datetime.now(tz).strftime("%m/%d/%Y")
-    today_date = "10/16/2024"
+    today_date = "3/28/2025"
     name = "mycrawler"
     allow_domains = ["nutrition.umd.edu"]
-    start_urls = [f"https://nutrition.umd.edu/?locationNum=19&dtdate={today_date}",
-                  f"https://nutrition.umd.edu/?locationNum=51&dtdate={today_date}",
-                  f"https://nutrition.umd.edu/?locationNum=16&dtdate={today_date}"]
-
-    # custom_settings = {
-    #     'FEEDS': {
-    #         'output.json': {'format': 'json', 'overwrite': True},
-    #     }
-    # }
+    start_urls = [f"https://nutrition.umd.edu/?locationNum=19&dtdate={today_date}"]
+                  # f"https://nutrition.umd.edu/?locationNum=51&dtdate={today_date}",
+                  # f"https://nutrition.umd.edu/?locationNum=16&dtdate={today_date}"]
 
     def parse(self, response, **kwargs):
         dining_hall = response.url[39:41]
@@ -50,7 +89,7 @@ class CrawlingSpider(scrapy.Spider):
         elif dining_hall == "19":
             dining_hall = "Yahentamitsi"
         elif dining_hall == "16":
-            dining_hall = "South Campus"
+            dining_hall = "South"
         else:
             dining_hall = "Unknown"
 
@@ -104,7 +143,7 @@ class CrawlingSpider(scrapy.Spider):
             "protein": response.css(".nutfactstopnutrient::text")[10].get(),
             "allergens": allergens
         }
-        yield item
+        scraped_data.append(item)
 
 
 def convert_meal_type(meal_type_selector, num_meal_types):
@@ -122,4 +161,3 @@ def convert_meal_type(meal_type_selector, num_meal_types):
         elif meal_type_id == 'pane-2':
             return 'Dinner'
     raise Exception('Unknown meal')
-
