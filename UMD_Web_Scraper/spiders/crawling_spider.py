@@ -25,15 +25,16 @@ class CrawlingSpider(scrapy.Spider):
         ending_time = datetime.now()
         supabase_client.table('food_today').insert(scraped_data).execute()
         print("Time taken:", ending_time - self.starting_time)
-        response = supabase_client.table('food').upsert(scraped_data, on_conflict=('name, dining_hall, section, meal_type, allergens', 'DO NOTHING'), ignore_duplicates=True).execute()
+        response = supabase_client.table('food').upsert(scraped_data, on_conflict=('name, dining_hall, section, meal_type')).execute()
         print(f"Response: {response}")
 
-    tz = timezone('EST')
-    today_date = datetime.now(tz).strftime("%m/%d/%Y")
+    # tz = timezone('EST')
+    # today_date = datetime.now(tz).strftime("%m/%d/%Y")
+    today_date = "10/16/2024"
     name = "mycrawler"
     allow_domains = ["nutrition.umd.edu"]
-    start_urls = [f"https://nutrition.umd.edu/?locationNum=51&dtdate={today_date}",
-                  f"https://nutrition.umd.edu/?locationNum=19&dtdate={today_date}",
+    start_urls = [f"https://nutrition.umd.edu/?locationNum=19&dtdate={today_date}",
+                  f"https://nutrition.umd.edu/?locationNum=51&dtdate={today_date}",
                   f"https://nutrition.umd.edu/?locationNum=16&dtdate={today_date}"]
 
     # custom_settings = {
@@ -121,3 +122,4 @@ def convert_meal_type(meal_type_selector, num_meal_types):
         elif meal_type_id == 'pane-2':
             return 'Dinner'
     raise Exception('Unknown meal')
+

@@ -1,10 +1,11 @@
 import scrapy
 from scrapy import signals
 from datetime import datetime
+from pytz import timezone
 from UMD_Web_Scraper.settings import supabase_client
 
 scraped_data = []
-
+# NOTE THIS ONE IS FAKE AND DOESN'T WORK
 
 
 class CrawlingSpider(scrapy.Spider):
@@ -24,11 +25,12 @@ class CrawlingSpider(scrapy.Spider):
         ending_time = datetime.now()
         supabase_client.table('food_today').insert(scraped_data).execute()
         print("Time taken:", ending_time - self.starting_time)
-        response = supabase_client.table('food').upsert(scraped_data, on_conflict=('name, dining_hall, section, meal_type, allergens', 'DO NOTHING'), ignore_duplicates=True).execute()
+        response = supabase_client.table('food').upsert(scraped_data, on_conflict=('name, dining_hall, section, meal_type')).execute()
         print(f"Response: {response}")
 
-
-    today_date = datetime.now().strftime("%m/%d/%Y")
+    tz = timezone('EST')
+    today_date = datetime.now(tz).strftime("%m/%d/%Y")
+    # today_date = "10/16/2024"
     name = "mycrawler"
     allow_domains = ["nutrition.umd.edu"]
     start_urls = [f"https://nutrition.umd.edu/?locationNum=51&dtdate={today_date}",

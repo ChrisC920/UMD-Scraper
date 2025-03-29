@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c34606cc-6068-4dcd-9d1a-af67e372e3fe" name="Changes" comment="added new curr db" />
+    <list default="true" id="c34606cc-6068-4dcd-9d1a-af67e372e3fe" name="Changes" comment="added new curr db">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UMD_Web_Scraper/spiders/crawling_spider.py" beforeDir="false" afterPath="$PROJECT_DIR$/UMD_Web_Scraper/spiders/crawling_spider.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/lib/UMD_Web_Scraper/spiders/crawling_spider.py" beforeDir="false" afterPath="$PROJECT_DIR$/build/lib/UMD_Web_Scraper/spiders/crawling_spider.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -34,6 +38,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -53,7 +58,12 @@
       <option name="presentableId" value="Default" />
       <updated>1728691383610</updated>
       <workItem from="1728691385493" duration="1524000" />
-      <workItem from="1729133409059" duration="2114000" />
+      <workItem from="1729133409059" duration="6153000" />
+      <workItem from="1729185500036" duration="967000" />
+      <workItem from="1729210199275" duration="2854000" />
+      <workItem from="1729298267725" duration="800000" />
+      <workItem from="1730912373719" duration="23000" />
+      <workItem from="1743217407416" duration="2406000" />
     </task>
     <servers />
   </component>
