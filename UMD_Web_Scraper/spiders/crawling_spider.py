@@ -12,7 +12,6 @@ class CrawlingSpider(scrapy.Spider):
         super().__init__(name, **kwargs)
         self.ending_time = None
         self.starting_time = datetime.now()
-        # supabase_client.table('food_today_old').delete().neq("id", 0).execute()
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
@@ -23,81 +22,118 @@ class CrawlingSpider(scrapy.Spider):
     def spider_closed(self, spider, reason):
 
         ending_time = datetime.now()
-        # supabase_client.table('food_today_old').insert(scraped_data).execute()
 
         # Insert into the food table while referencing the correct foreign keys
-        for data in scraped_data:
-            # Upsert the food item and get its ID
-            food_response = supabase_client.table('foods').upsert({
-                "name": data["name"],
-                "link": data["link"],
-                "serving_size": data["serving_size"],
-                "servings_per_container": data["servings_per_container"].replace(" servings per container", ""),
-                "calories_per_serving": data["calories_per_serving"].replace("\xa0", "").replace("Saturated Fat", ""),
-                "total_fat": data["total_fat"],
-                "saturated_fat": data["saturated_fat"],
-                "trans_fat": data["trans_fat"],
-                "total_carbohydrates": data["total_carbohydrates"],
-                "dietary_fiber": data["dietary_fiber"].replace("\xa0", "").replace("Dietary Fiber", ""),
-                "total_sugars": data["total_sugars"].replace("\xa0", "").replace("Total Sugars", ""),
-                "added_sugars": data["added_sugars"].replace("\xa0", "")[9:].replace(" Added Sugars", ""),
-                "cholesterol": data["cholesterol"],
-                "sodium": data["sodium"],
-                "protein": data["protein"]
-            }, on_conflict="name, link").execute()
+        parsed_scraped_data = [{
+            "name": data["name"],
+            "link": data["link"],
+            "serving_size": data["serving_size"],
+            "servings_per_container": data["servings_per_container"].replace(" servings per container", ""),
+            "calories_per_serving": data["calories_per_serving"].replace("\xa0", "").replace("Saturated Fat", ""),
+            "total_fat": data["total_fat"],
+            "saturated_fat": data["saturated_fat"],
+            "trans_fat": data["trans_fat"],
+            "total_carbohydrates": data["total_carbohydrates"],
+            "dietary_fiber": data["dietary_fiber"].replace("\xa0", "").replace("Dietary Fiber", ""),
+            "total_sugars": data["total_sugars"].replace("\xa0", "").replace("Total Sugars", ""),
+            "added_sugars": data["added_sugars"].replace("\xa0", "")[9:].replace(" Added Sugars", ""),
+            "cholesterol": data["cholesterol"],
+            "sodium": data["sodium"],
+            "protein": data["protein"]
+        } for data in scraped_data]
 
-            food_id = food_response.data[0]['id']
+        # Remove duplicates based on (name, link)
+        foods_data = {(data["name"], data["link"]): data for data in parsed_scraped_data}.values()
 
-            # Insert into dining_halls and get ID
-            dining_hall_response = supabase_client.table('dining_halls').upsert({"name": data["dining_hall"]},
-                                                                                on_conflict="name").execute()
-            dining_hall_id = dining_hall_response.data[0]['id']
+        food_response = supabase_client.table('foods').upsert(list(foods_data), on_conflict="name, link").execute()
 
-            # Associate food with dining hall
-            supabase_client.table('food_dining_halls').upsert(
-                {"food_id": food_id, "dining_hall_id": dining_hall_id}).execute()
+        food_ids = {f["name"]: f["id"] for f in food_response.data}
 
-            # Insert into meal_types and get ID
-            meal_type_response = supabase_client.table('meal_types').upsert({"name": data["meal_type"]},
-                                                                            on_conflict="name").execute()
-            meal_type_id = meal_type_response.data[0]['id']
+        dining_halls = list({data["dining_hall"] for data in scraped_data})
+        meal_types = list({data["meal_type"] for data in scraped_data})
+        sections = list({data["section"] for data in scraped_data})
 
-            # Associate food with meal type
-            supabase_client.table('food_meal_types').upsert(
-                {"food_id": food_id, "meal_type_id": meal_type_id}).execute()
+        dining_hall_response = supabase_client.table('dining_halls').upsert(
+            [{"name": dh} for dh in dining_halls], on_conflict="name"
+        ).execute()
 
-            # Insert into sections and get ID
-            section_response = supabase_client.table('sections').upsert({"name": data["section"]},
-                                                                        on_conflict="name").execute()
-            section_id = section_response.data[0]['id']
+        meal_type_response = supabase_client.table('meal_types').upsert(
+            [{"name": mt} for mt in meal_types], on_conflict="name"
+        ).execute()
 
-            supabase_client.table('dining_hall_sections').upsert(
-                {"dining_hall_id": dining_hall_id, "section_id": section_id},
-                on_conflict="dining_hall_id, section_id"
-            ).execute()
+        section_response = supabase_client.table('sections').upsert(
+            [{"name": sec} for sec in sections], on_conflict="name"
+        ).execute()
 
-            # Associate food with section
-            supabase_client.table('food_sections').upsert({"food_id": food_id, "section_id": section_id}).execute()
+        dining_hall_ids = {d["name"]: d["id"] for d in dining_hall_response.data}
+        meal_type_ids = {m["name"]: m["id"] for m in meal_type_response.data}
+        section_ids = {s["name"]: s["id"] for s in section_response.data}
 
-            for allergen in data["allergens"]:
-                # Insert allergen (ensuring uniqueness by name)
-                allergen_response = supabase_client.table('allergens').upsert({"name": allergen},
-                                                                              on_conflict="name").execute()
-                allergen_id = allergen_response.data[0]['id']
+        food_dining_halls = [
+            {"food_id": food_ids[data["name"]], "dining_hall_id": dining_hall_ids[data["dining_hall"]]}
+            for data in scraped_data
+        ]
 
-                # Associate food with allergen
-                supabase_client.table('food_allergens').upsert(
-                    {"food_id": food_id, "allergen_id": allergen_id}).execute()
+        food_meal_types = [
+            {"food_id": food_ids[data["name"]], "meal_type_id": meal_type_ids[data["meal_type"]]}
+            for data in scraped_data
+        ]
+
+        food_sections = [
+            {"food_id": food_ids[data["name"]], "section_id": section_ids[data["section"]]}
+            for data in scraped_data
+        ]
+
+        unique_food_dining_halls = list(
+            {(entry["food_id"], entry["dining_hall_id"]): entry for entry in food_dining_halls}.values())
+        unique_food_meal_types = list(
+            {(entry["food_id"], entry["meal_type_id"]): entry for entry in food_meal_types}.values())
+        unique_food_sections = list(
+            {(entry["food_id"], entry["section_id"]): entry for entry in food_sections}.values())
+
+        supabase_client.table('food_dining_halls').upsert(unique_food_dining_halls).execute()
+        supabase_client.table('food_meal_types').upsert(unique_food_meal_types).execute()
+        supabase_client.table('food_sections').upsert(unique_food_sections).execute()
+
+        dining_hall_sections = [
+            {"dining_hall_id": dining_hall_ids[data["dining_hall"]], "section_id": section_ids[data["section"]]}
+            for data in scraped_data
+        ]
+
+        unique_dining_hall_sections = list(
+            {(entry["dining_hall_id"], entry["section_id"]): entry for entry in dining_hall_sections}.values()
+        )
+
+        supabase_client.table('dining_hall_sections').upsert(
+            unique_dining_hall_sections, on_conflict="dining_hall_id, section_id"
+        ).execute()
+
+        allergen_names = list({allergen for data in scraped_data for allergen in data["allergens"]})
+        allergen_response = supabase_client.table('allergens').upsert(
+            [{"name": a} for a in allergen_names], on_conflict="name"
+        ).execute()
+
+        allergen_ids = {a["name"]: a["id"] for a in allergen_response.data}
+
+        food_allergens = [
+            {"food_id": food_ids[data["name"]], "allergen_id": allergen_ids[allergen]}
+            for data in scraped_data for allergen in data["allergens"]
+        ]
+
+        unique_food_allergens = list(
+            {(entry["food_id"], entry["allergen_id"]): entry for entry in food_allergens}.values())
+
+        supabase_client.table('food_allergens').upsert(unique_food_allergens).execute()
 
         print(f"Scraped {len(scraped_data)} items.")
         print("Time taken:", ending_time - self.starting_time)
 
-    # tz = timezone('EST')
-    # today_date = datetime.now(tz).strftime("%m/%d/%Y")
-    today_date = "3/28/2025"
+    tz = timezone('EST')
+    today_date = datetime.now(tz).strftime("%m/%d/%Y")
+    # today_date = "3/30/2025"
     name = "mycrawler"
     allow_domains = ["nutrition.umd.edu"]
-    start_urls = [f"https://nutrition.umd.edu/?locationNum=19&dtdate={today_date}"
+    start_urls = [f"https://nutrition.umd.edu/?locationNum=19&dtdate={today_date}",
                   f"https://nutrition.umd.edu/?locationNum=51&dtdate={today_date}",
                   f"https://nutrition.umd.edu/?locationNum=16&dtdate={today_date}"]
 
