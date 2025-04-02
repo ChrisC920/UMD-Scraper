@@ -20,7 +20,8 @@ class CrawlingSpider(scrapy.Spider):
         return spider
 
     def spider_closed(self, spider, reason):
-        today_date = datetime.today().strftime("%Y-%m-%d")
+        tz = timezone('EST')
+        today_date = datetime.now(tz).strftime("%Y-%m-%d")
 
         ending_time = datetime.now()
 
