@@ -127,7 +127,8 @@ class CrawlingSpider(scrapy.Spider):
 
         supabase_client.table('food_allergens').upsert(unique_food_allergens).execute()
 
-        food_dates_data = [{"food_id": food_id, "date_served": today_date} for food_id in food_ids.values()]
+        food_dates_data = [{"food_id": food_ids[data["name"]], "dining_hall_id": dining_hall_ids[data["dining_hall"]], "date_served": today_date, "meal_type_id": meal_type_ids[data["meal_type"]], "section_id": section_ids[data["section"]]}
+            for data in scraped_data]
 
         food_date = supabase_client.table('food_dates').upsert(food_dates_data).execute()
 
