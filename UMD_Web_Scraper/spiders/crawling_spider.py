@@ -20,6 +20,7 @@ class CrawlingSpider(scrapy.Spider):
         return spider
 
     def spider_closed(self, spider, reason):
+        today_date = datetime.today().strftime("%Y-%m-%d")
 
         ending_time = datetime.now()
 
@@ -124,6 +125,10 @@ class CrawlingSpider(scrapy.Spider):
             {(entry["food_id"], entry["allergen_id"]): entry for entry in food_allergens}.values())
 
         supabase_client.table('food_allergens').upsert(unique_food_allergens).execute()
+
+        food_dates_data = [{"food_id": food_id, "date_served": today_date} for food_id in food_ids.values()]
+
+        food_date = supabase_client.table('food_dates').upsert(food_dates_data).execute()
 
         print(f"Scraped {len(scraped_data)} items.")
         print("Time taken:", ending_time - self.starting_time)
