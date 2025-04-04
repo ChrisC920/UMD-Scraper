@@ -56,15 +56,15 @@ class CrawlingSpider(scrapy.Spider):
         sections = list({data["section"].strip() for data in scraped_data})
 
         dining_hall_response = supabase_client.table('dining_halls').upsert(
-            [{"name": dh} for dh in dining_halls], on_conflict="name"
+            [{"name": dh} for dh.strip() in dining_halls], on_conflict="name"
         ).execute()
 
         meal_type_response = supabase_client.table('meal_types').upsert(
-            [{"name": mt} for mt in meal_types], on_conflict="name"
+            [{"name": mt} for mt.strip() in meal_types], on_conflict="name"
         ).execute()
 
         section_response = supabase_client.table('sections').upsert(
-            [{"name": sec} for sec in sections], on_conflict="name"
+            [{"name": sec.strip()} for sec in sections], on_conflict="name"
         ).execute()
 
         date_response = supabase_client.table('dates').upsert({"date": today_date}, on_conflict="date").execute()
