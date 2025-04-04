@@ -53,7 +53,7 @@ class CrawlingSpider(scrapy.Spider):
 
         dining_halls = list({data["dining_hall"] for data in scraped_data})
         meal_types = list({data["meal_type"] for data in scraped_data})
-        sections = list({data["section"] for data in scraped_data})
+        sections = list({data["section"].strip() for data in scraped_data})
 
         dining_hall_response = supabase_client.table('dining_halls').upsert(
             [{"name": dh} for dh in dining_halls], on_conflict="name"
