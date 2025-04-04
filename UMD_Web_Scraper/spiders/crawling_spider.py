@@ -67,9 +67,12 @@ class CrawlingSpider(scrapy.Spider):
             [{"name": sec} for sec in sections], on_conflict="name"
         ).execute()
 
+        date_response = supabase_client.table('dates').upsert({"date": today_date}, on_conflict="date").execute()
+
         dining_hall_ids = {d["name"]: d["id"] for d in dining_hall_response.data}
         meal_type_ids = {m["name"]: m["id"] for m in meal_type_response.data}
         section_ids = {s["name"]: s["id"] for s in section_response.data}
+        date_ids = {da["date"]: da["id"] for da in date_response.data}
 
         food_dining_halls = [
             {"food_id": food_ids[data["name"]], "dining_hall_id": dining_hall_ids[data["dining_hall"]]}
@@ -86,16 +89,24 @@ class CrawlingSpider(scrapy.Spider):
             for data in scraped_data
         ]
 
+        food_dates = [
+            {"food_id": food_ids[data["name"]], "date_id": date_ids[today_date]}
+            for data in scraped_data
+        ]
+
         unique_food_dining_halls = list(
             {(entry["food_id"], entry["dining_hall_id"]): entry for entry in food_dining_halls}.values())
         unique_food_meal_types = list(
             {(entry["food_id"], entry["meal_type_id"]): entry for entry in food_meal_types}.values())
         unique_food_sections = list(
             {(entry["food_id"], entry["section_id"]): entry for entry in food_sections}.values())
+        unique_food_dates = list(
+            {(entry["food_id"], entry["date_id"]): entry for entry in food_dates}.values())
 
         supabase_client.table('food_dining_halls').upsert(unique_food_dining_halls).execute()
         supabase_client.table('food_meal_types').upsert(unique_food_meal_types).execute()
         supabase_client.table('food_sections').upsert(unique_food_sections).execute()
+        supabase_client.table('food_dates').upsert(unique_food_dates).execute()
 
         dining_hall_sections = [
             {"dining_hall_id": dining_hall_ids[data["dining_hall"]], "section_id": section_ids[data["section"]]}
@@ -127,10 +138,10 @@ class CrawlingSpider(scrapy.Spider):
 
         supabase_client.table('food_allergens').upsert(unique_food_allergens).execute()
 
-        food_dates_data = [{"food_id": food_ids[data["name"]], "dining_hall_id": dining_hall_ids[data["dining_hall"]], "date_served": today_date, "meal_type_id": meal_type_ids[data["meal_type"]], "section_id": section_ids[data["section"]]}
+        food_relations_data = [{"food_id": food_ids[data["name"]], "dining_hall_id": dining_hall_ids[data["dining_hall"]], "date_id": date_ids[today_date], "meal_type_id": meal_type_ids[data["meal_type"]], "section_id": section_ids[data["section"]]}
             for data in scraped_data]
 
-        food_date = supabase_client.table('food_dates').upsert(food_dates_data).execute()
+        food_relations = supabase_client.table('food_relations').upsert(food_relations_data).execute()
 
         print(f"Scraped {len(scraped_data)} items.")
         print("Time taken:", ending_time - self.starting_time)
