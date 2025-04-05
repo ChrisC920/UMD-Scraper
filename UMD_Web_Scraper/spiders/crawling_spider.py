@@ -75,17 +75,17 @@ class CrawlingSpider(scrapy.Spider):
         date_ids = {da["date"]: da["id"] for da in date_response.data}
 
         food_dining_halls = [
-            {"food_id": food_ids[data["name"]], "dining_hall_id": dining_hall_ids[data["dining_hall"]]}
+            {"food_id": food_ids[data["name"]], "dining_hall_id": dining_hall_ids[data["dining_hall"].strip()]}
             for data in scraped_data
         ]
 
         food_meal_types = [
-            {"food_id": food_ids[data["name"]], "meal_type_id": meal_type_ids[data["meal_type"]]}
+            {"food_id": food_ids[data["name"]], "meal_type_id": meal_type_ids[data["meal_type"].strip()]}
             for data in scraped_data
         ]
 
         food_sections = [
-            {"food_id": food_ids[data["name"]], "section_id": section_ids[data["section"]]}
+            {"food_id": food_ids[data["name"]], "section_id": section_ids[data["section"].strip()]}
             for data in scraped_data
         ]
 
@@ -109,7 +109,7 @@ class CrawlingSpider(scrapy.Spider):
         supabase_client.table('food_dates').upsert(unique_food_dates).execute()
 
         dining_hall_sections = [
-            {"dining_hall_id": dining_hall_ids[data["dining_hall"]], "section_id": section_ids[data["section"]]}
+            {"dining_hall_id": dining_hall_ids[data["dining_hall"].strip()], "section_id": section_ids[data["section"].strip()]}
             for data in scraped_data
         ]
 
@@ -138,7 +138,7 @@ class CrawlingSpider(scrapy.Spider):
 
         supabase_client.table('food_allergens').upsert(unique_food_allergens).execute()
 
-        food_relations_data = [{"food_id": food_ids[data["name"]], "dining_hall_id": dining_hall_ids[data["dining_hall"]], "date_id": date_ids[today_date], "meal_type_id": meal_type_ids[data["meal_type"]], "section_id": section_ids[data["section"]]}
+        food_relations_data = [{"food_id": food_ids[data["name"]], "dining_hall_id": dining_hall_ids[data["dining_hall"].strip()], "date_id": date_ids[today_date], "meal_type_id": meal_type_ids[data["meal_type"].strip()], "section_id": section_ids[data["section"].strip()]}
             for data in scraped_data]
 
         food_relations = supabase_client.table('food_relations').upsert(food_relations_data).execute()
