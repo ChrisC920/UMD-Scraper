@@ -141,7 +141,7 @@ class CrawlingSpider(scrapy.Spider):
         food_relations_data = [{"food_id": food_ids[data["name"]], "dining_hall_id": dining_hall_ids[data["dining_hall"].strip()], "date_id": date_ids[today_date], "meal_type_id": meal_type_ids[data["meal_type"].strip()], "section_id": section_ids[data["section"].strip()]}
             for data in scraped_data]
 
-        food_relations = supabase_client.table('food_relations').upsert(food_relations_data).execute()
+        food_relations = supabase_client.table('food_relations').upsert(food_relations_data, on_conflict="food_id, dining_hall_id, date_id, meal_type_id, section_id").execute()
 
         print(f"Scraped {len(scraped_data)} items.")
         print("Time taken:", ending_time - self.starting_time)
