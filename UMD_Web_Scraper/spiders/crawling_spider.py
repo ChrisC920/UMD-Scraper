@@ -20,9 +20,9 @@ class CrawlingSpider(scrapy.Spider):
         return spider
 
     def spider_closed(self, spider, reason):
-        tz = timezone('EST')
-        today_date = datetime.now(tz).strftime("%Y-%m-%d")
-
+        # tz = timezone('EST')
+        # today_date = datetime.now(tz).strftime("%Y-%m-%d")
+        today_date = "2025-04-15"
         ending_time = datetime.now()
 
         # Insert into the food table while referencing the correct foreign keys
@@ -34,7 +34,7 @@ class CrawlingSpider(scrapy.Spider):
             "calories_per_serving": data["calories_per_serving"].replace("\xa0", ""),
             "total_fat": data["total_fat"],
             "saturated_fat": data["saturated_fat"].replace("\xa0", "").replace("Saturated Fat", ""),
-            "trans_fat": data["trans_fat"],
+            "trans_fat": data["trans_fat"].replace("Fat", "").replace("\xa0", ""),
             "total_carbohydrates": data["total_carbohydrates"],
             "dietary_fiber": data["dietary_fiber"].replace("\xa0", "").replace("Dietary Fiber", ""),
             "total_sugars": data["total_sugars"].replace("\xa0", "").replace("Total Sugars", ""),
@@ -146,9 +146,9 @@ class CrawlingSpider(scrapy.Spider):
         print(f"Scraped {len(scraped_data)} items.")
         print("Time taken:", ending_time - self.starting_time)
 
-    tz = timezone('EST')
-    today_date = datetime.now(tz).strftime("%m/%d/%Y")
-    # today_date = "3/30/2025"
+    # tz = timezone('EST')
+    # today_date = datetime.now(tz).strftime("%m/%d/%Y")
+    today_date = "4/15/2025"
     name = "mycrawler"
     allow_domains = ["nutrition.umd.edu"]
     start_urls = [f"https://nutrition.umd.edu/?locationNum=19&dtdate={today_date}",
@@ -206,7 +206,7 @@ class CrawlingSpider(scrapy.Spider):
             "calories_per_serving": response.css("td p::text")[1].get(),
             "total_fat": response.css(".nutfactstopnutrient::text")[0].get(),
             "saturated_fat": response.css(".nutfactstopnutrient::text")[2].get(),
-            "trans_fat": response.css(".nutfactstopnutrient *::text")[4].get(),
+            "trans_fat": response.css(".nutfactstopnutrient::text")[5].get(),
             "total_carbohydrates": response.css(".nutfactstopnutrient::text")[1].get(),
             "dietary_fiber": response.css(".nutfactstopnutrient::text")[3].get(),
             "total_sugars": response.css(".nutfactstopnutrient::text")[6].get(),
@@ -234,3 +234,8 @@ def convert_meal_type(meal_type_selector, num_meal_types):
         elif meal_type_id == 'pane-2':
             return 'Dinner'
     raise Exception('Unknown meal')
+
+def convert_allergen(allergen_text):
+    match allergen_text:
+        case 'Contains sesame':
+            return 'Sesame'

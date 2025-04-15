@@ -33,6 +33,8 @@ class UmdWebScraperPipeline:
         adapter['section'] = value.strip()
         value = adapter.get('saturated_fat')
         adapter['saturated_fat'] = value.replace("Saturated Fat", '')
+        value = adapter.get('trans_fat')
+        adapter['trans_fat'] = value.replace("Trans Fat", '')
         value = adapter.get('dietary_fiber')
         adapter['dietary_fiber'] = value.replace("Dietary Fiber", '')
         value = adapter.get('total_sugars')
