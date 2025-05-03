@@ -20,9 +20,9 @@ class CrawlingSpider(scrapy.Spider):
         return spider
 
     def spider_closed(self, spider, reason):
-        tz = timezone('EST')
+        tz = timezone('America/New_York')
         today_date = datetime.now(tz).strftime("%Y-%m-%d")
-        # today_date = "2025-04-15"
+        # today_date = "2025-04-02"
         ending_time = datetime.now()
 
         # Insert into the food table while referencing the correct foreign keys
@@ -146,9 +146,9 @@ class CrawlingSpider(scrapy.Spider):
         print(f"Scraped {len(scraped_data)} items.")
         print("Time taken:", ending_time - self.starting_time)
 
-    tz = timezone('EST')
+    tz = timezone('America/New_York')
     today_date = datetime.now(tz).strftime("%m/%d/%Y")
-    # today_date = "4/15/2025"
+    # today_date = "4/02/2025"
     name = "mycrawler"
     allow_domains = ["nutrition.umd.edu"]
     start_urls = [f"https://nutrition.umd.edu/?locationNum=19&dtdate={today_date}",
